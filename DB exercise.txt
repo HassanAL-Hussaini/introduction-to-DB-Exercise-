@@ -1,0 +1,134 @@
+create database store;
+
+create table countries(
+    code int primary key ,
+    name varchar(20) unique ,
+    continent_name varchar(20) not null
+);
+
+create table users(
+    id int primary key ,
+    full_name varchar(20) ,
+    email varchar(20) unique ,
+    gender char(1) check (gender='f' or gender= 'm'),
+    date_of_birth varchar(15) not null,
+    created_at datetime,
+    country_code int ,
+    foreign key (country_code) references countries(code)
+);
+
+create table orders(
+    id int primary key,
+    user_id int,
+    status varchar(6) check ( status = 'start'or status = 'finish' ),
+    create_at datetime,
+    foreign key (user_id) references users(id)
+);
+
+create table products(
+    id int primary key ,
+    name varchar(10) not null,
+    price int default 0,
+    status varchar(10) check ( status = 'valid' or status = 'expired'),
+    created_at datetime DEFAULT CURRENT_TIMESTAMP
+);
+
+create table order_products(
+    order_id int ,
+    product_id int ,
+    quantity int default 0,
+    primary key(order_id , product_id),
+    foreign key (order_id) references orders(id),
+    foreign key (product_id) references products(id)
+);
+
+
+## DML
+
+# countries insert values
+INSERT INTO countries (code, name, continent_name) VALUES
+        (1, 'Saudi Arabia', 'Asia'),
+        (2, 'USA', 'North America'),
+        (3, 'Germany', 'Europe'),
+        (4, 'Japan', 'Asia'),
+        (5, 'Brazil', 'South America');
+
+select * from countries;
+update countries set name='China' where name = 'Japan' and code = 4;
+#لأن البرازيل بكود 5 مرتبطه باليزر اللي بحدثه ماراح تقبل بسبب الارتباط بforgien key الى ان يتم تغيير الفورين كي وربطه بدوله اخرى او حذفه تماما
+# you cant Change the parent directly ..
+update users set country_code = 1 where country_code = 5;
+delete from countries where code = 5;
+
+
+# users insert values
+INSERT INTO users (id, full_name, email, gender, date_of_birth, created_at, country_code) VALUES
+        (101, 'Hassan Yousef', 'hassan@gmail.com', 'm', '2000-01-01', CURRENT_TIMESTAMP, 1),
+        (102, 'Lina Khaled', 'lina@gmail.com', 'f', '1998-05-12', CURRENT_TIMESTAMP, 2),
+        (103, 'Ali Ahmad', 'ali@gmail.com', 'm', '1995-09-25', CURRENT_TIMESTAMP, 3),
+        (104, 'Sarah Ali', 'sarah@gmail.com', 'f', '2001-07-18', CURRENT_TIMESTAMP, 4),
+        (105, 'Omar Nasser', 'omar@gmail.com', 'm', '1999-11-30', CURRENT_TIMESTAMP, 5);
+
+select * from users;
+update users set full_name = 'Hassan Y. Yousef' where id = 101;
+update users set country_code = 4 where id = 105;
+delete from orders where user_id = 105;# لابد نحذف طلبه اولا عشان نحذفه
+delete from users where id = 105;
+
+
+
+INSERT INTO orders (id, user_id, status, create_at) VALUES
+         (201, 101, 'start', CURRENT_TIMESTAMP),
+         (202, 102, 'finish', CURRENT_TIMESTAMP),
+         (203, 103, 'start', CURRENT_TIMESTAMP),
+         (204, 104, 'finish', CURRENT_TIMESTAMP),
+         (205, 105, 'start', CURRENT_TIMESTAMP);
+
+select * from orders;
+update orders set status = 'finish' where id = 201;
+delete from order_products where order_id = 205;
+delete from orders where id = 205;
+
+
+
+
+INSERT INTO products (id, name, price, status) VALUES
+                                                   (301, 'Laptop', 3500, 'valid'),
+                                                   (302, 'Mouse', 50, 'valid'),
+                                                   (303, 'Keyboard', 150, 'valid'),
+                                                   (304, 'Monitor', 700, 'expired'),
+                                                   (305, 'USB', 30, 'valid');
+select * from products;
+update products set name = 'ipad' where name = 'Laptop';
+
+INSERT INTO order_products (order_id, product_id, quantity) VALUES
+         (201, 301, 1),
+         (202, 302, 2),
+         (203, 303, 3),
+         (204, 304, 1),
+         (205, 305, 4);
+
+select * from order_products;
+
+#insert statements
+
+-- 1. add new country
+insert into countries (code, name, continent_name)
+values (6, 'canada', 'north america');
+
+-- 2. add new user
+insert into users (id, full_name, email, gender, date_of_birth, created_at, country_code)
+values (106, 'maha salem', 'maha@gmail.com', 'f', '2002-03-14', current_timestamp, 6);
+
+-- 3. add new order
+insert into orders (id, user_id, status, create_at)
+values (206, 106, 'start', current_timestamp);
+
+-- 4. add new product
+insert into products (id, name, price, status)
+values (306, 'tablet', 1200, 'valid');
+
+-- 5. add new order_product
+insert into order_products (order_id, product_id, quantity)
+values (206, 306, 2);
+
